@@ -9,7 +9,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "O'qish Testi - Bola-dostona O'qish Platformasi",
   description: "Bolalar uchun interactive o'qish testlari va o'quv platformasi",
-  generator: "v0.app",
+  generator: "ardentsoft.uz",
   icons: {
     icon: [
       {
