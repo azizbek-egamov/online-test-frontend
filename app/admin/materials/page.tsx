@@ -1,0 +1,682 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { apiService, type ReadingMaterial, type Question } from "@/lib/api-service"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { 
+  Plus, 
+  Search, 
+  Edit, 
+  Trash2, 
+  BookOpen,
+  FileQuestion,
+  X
+} from "lucide-react"
+
+interface QuestionFormData {
+  id?: number
+  question_type: 'multiple_choice' | 'written'
+  question_text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  correct_option: string
+  correct_answer: string
+}
+
+export default function AdminMaterialsPage() {
+  const [materials, setMaterials] = useState<ReadingMaterial[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasNextPage, setHasNextPage] = useState(false)
+  const [hasPreviousPage, setHasPreviousPage] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingMaterial, setEditingMaterial] = useState<ReadingMaterial | null>(null)
+  const [formData, setFormData] = useState({
+    title: "",
+    short_description: "",
+    content: "",
+  })
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [questions, setQuestions] = useState<QuestionFormData[]>([
+    {
+      question_type: 'multiple_choice',
+      question_text: '',
+      option_a: '',
+      option_b: '',
+      option_c: '',
+      option_d: '',
+      correct_option: '',
+      correct_answer: '',
+    }
+  ])
+  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>([])
+
+  const pageSize = 20
+
+  useEffect(() => {
+    loadMaterials()
+  }, [searchQuery, currentPage])
+
+  const loadMaterials = async () => {
+    try {
+      setIsLoading(true)
+      const data = await apiService.adminGetReadingMaterials({
+        page: currentPage,
+        search: searchQuery || undefined,
+      })
+      setMaterials(data.results)
+      setTotalCount(data.count)
+      setHasNextPage(Boolean(data.next))
+      setHasPreviousPage(Boolean(data.previous))
+      setError(null)
+    } catch (err: any) {
+      console.error("Materials load error:", err)
+      setError(err.message || "Materiallarni yuklashda xatolik")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCreate = () => {
+    setActionError(null)
+    setFormData({ title: "", short_description: "", content: "" })
+    setQuestions([{
+      question_type: 'multiple_choice',
+      question_text: '',
+      option_a: '',
+      option_b: '',
+      option_c: '',
+      option_d: '',
+      correct_option: '',
+      correct_answer: '',
+    }])
+    setDeletedQuestionIds([])
+    setEditingMaterial(null)
+    setShowCreateForm(true)
+  }
+
+  const handleEdit = async (material: ReadingMaterial) => {
+    setActionError(null)
+    setFormData({
+      title: material.title,
+      short_description: material.short_description || "",
+      content: material.content,
+    })
+    setEditingMaterial(material)
+    setDeletedQuestionIds([])
+    
+    // Material savollarini yuklash
+    try {
+      const materialQuestionsResponse = await apiService.adminGetQuestions({ 
+        reading_material: material.id,
+        page_size: 200,
+      })
+      const materialQuestions = materialQuestionsResponse.results
+      if (materialQuestions.length > 0) {
+        setQuestions(materialQuestions.map(q => ({
+          id: q.id,
+          question_type: q.question_type,
+          question_text: q.question_text,
+          option_a: q.option_a || '',
+          option_b: q.option_b || '',
+          option_c: q.option_c || '',
+          option_d: q.option_d || '',
+          correct_option: q.correct_option || '',
+          correct_answer: q.correct_answer || '',
+        })))
+      } else {
+        setQuestions([{
+          question_type: 'multiple_choice',
+          question_text: '',
+          option_a: '',
+          option_b: '',
+          option_c: '',
+          option_d: '',
+          correct_option: '',
+          correct_answer: '',
+        }])
+      }
+    } catch (err) {
+      console.error("Questions load error:", err)
+      setQuestions([{
+        question_type: 'multiple_choice',
+        question_text: '',
+        option_a: '',
+        option_b: '',
+        option_c: '',
+        option_d: '',
+        correct_option: '',
+        correct_answer: '',
+      }])
+    }
+    
+    setShowCreateForm(true)
+  }
+
+  const addQuestion = () => {
+    setQuestions([...questions, {
+      question_type: 'multiple_choice',
+      question_text: '',
+      option_a: '',
+      option_b: '',
+      option_c: '',
+      option_d: '',
+      correct_option: '',
+      correct_answer: '',
+    }])
+  }
+
+  const removeQuestion = (index: number) => {
+    const question = questions[index]
+    // Agar mavjud savol bo'lsa (id bor), o'chirilganlar ro'yxatiga qo'shish
+    if (question.id) {
+      setDeletedQuestionIds([...deletedQuestionIds, question.id])
+    }
+    setQuestions(questions.filter((_, i) => i !== index))
+  }
+
+  const updateQuestion = (index: number, field: keyof QuestionFormData, value: any) => {
+    const updated = [...questions]
+    updated[index] = { ...updated[index], [field]: value }
+    setQuestions(updated)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Bu materialni o'chirishni xohlaysizmi?")) {
+      return
+    }
+
+    try {
+      setDeletingId(id)
+      await apiService.adminDeleteReadingMaterial(id)
+      await loadMaterials()
+    } catch (err: any) {
+      alert(err.message || "O'chirishda xatolik")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setActionError(null)
+    setIsSubmittingForm(true)
+    try {
+      let materialId: number
+      
+      if (editingMaterial) {
+        await apiService.adminUpdateReadingMaterial(editingMaterial.id, formData)
+        materialId = editingMaterial.id
+      } else {
+        const newMaterial = await apiService.adminCreateReadingMaterial(formData)
+        materialId = newMaterial.id
+      }
+
+      // O'chirilgan savollarni o'chirish
+      for (const questionId of deletedQuestionIds) {
+        try {
+          await apiService.adminDeleteQuestion(questionId)
+        } catch (err) {
+          console.error("Question delete error:", err)
+        }
+      }
+
+      // Savollarni saqlash
+      for (const question of questions) {
+        const questionData: any = {
+          reading_material: materialId,
+          question_type: question.question_type,
+          question_text: question.question_text,
+        }
+
+        if (question.question_type === 'multiple_choice') {
+          questionData.option_a = question.option_a
+          questionData.option_b = question.option_b
+          questionData.option_c = question.option_c
+          questionData.option_d = question.option_d
+          questionData.correct_option = question.correct_option
+        } else {
+          questionData.correct_answer = question.correct_answer
+        }
+
+        if (question.id) {
+          // Mavjud savolni yangilash
+          await apiService.adminUpdateQuestion(question.id, questionData)
+        } else {
+          // Yangi savol yaratish
+          await apiService.adminCreateQuestion(questionData)
+        }
+      }
+
+      setShowCreateForm(false)
+      setEditingMaterial(null)
+      setFormData({ title: "", short_description: "", content: "" })
+      setQuestions([{
+        question_type: 'multiple_choice',
+        question_text: '',
+        option_a: '',
+        option_b: '',
+        option_c: '',
+        option_d: '',
+        correct_option: '',
+        correct_answer: '',
+      }])
+      setDeletedQuestionIds([])
+      await loadMaterials()
+    } catch (err: any) {
+      setActionError(err.message || "Saqlashda xatolik")
+    } finally {
+      setIsSubmittingForm(false)
+    }
+  }
+
+  if (isLoading && materials.length === 0) {
+    return (
+      <div className="p-8">
+        <div className="text-muted-foreground">Yuklanmoqda...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-8">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">O'quv materiallari</h1>
+          <p className="text-muted-foreground">Materiallarni boshqarish</p>
+        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="w-4 h-4 mr-2" />
+          Yangi material
+        </Button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Qidirish..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Create/Edit Form */}
+      {showCreateForm && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>
+              {editingMaterial ? "Materialni tahrirlash" : "Yangi material"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {actionError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {actionError}
+                </div>
+              )}
+              {/* Material Fields */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold border-b pb-2">Material ma'lumotlari</h3>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Sarlavha</label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Qisqacha ma'lumot
+                  </label>
+                  <Input
+                    value={formData.short_description}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        short_description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Mazmun</label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
+                    required
+                    rows={10}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Questions Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h3 className="text-lg font-semibold">Savollar</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addQuestion}
+                    disabled={isSubmittingForm}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Savol qo'shish
+                  </Button>
+                </div>
+
+                <div className="space-y-6">
+                  {questions.map((question, index) => (
+                    <Card key={index} className="border-2">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">
+                            Savol #{index + 1}
+                          </CardTitle>
+                          {questions.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeQuestion(index)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Savol turi
+                          </label>
+                          <select
+                            value={question.question_type}
+                            onChange={(e) =>
+                              updateQuestion(
+                                index,
+                                'question_type',
+                                e.target.value as 'multiple_choice' | 'written'
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                          >
+                            <option value="multiple_choice">Ko'p tanlovli</option>
+                            <option value="written">Yozma</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Savol matni
+                          </label>
+                          <textarea
+                            value={question.question_text}
+                            onChange={(e) =>
+                              updateQuestion(index, 'question_text', e.target.value)
+                            }
+                            required
+                            rows={3}
+                            className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                          />
+                        </div>
+
+                        {question.question_type === 'multiple_choice' ? (
+                          <>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                  A variant
+                                </label>
+                                <Input
+                                  value={question.option_a}
+                                  onChange={(e) =>
+                                    updateQuestion(index, 'option_a', e.target.value)
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                  B variant
+                                </label>
+                                <Input
+                                  value={question.option_b}
+                                  onChange={(e) =>
+                                    updateQuestion(index, 'option_b', e.target.value)
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                  C variant
+                                </label>
+                                <Input
+                                  value={question.option_c}
+                                  onChange={(e) =>
+                                    updateQuestion(index, 'option_c', e.target.value)
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                  D variant
+                                </label>
+                                <Input
+                                  value={question.option_d}
+                                  onChange={(e) =>
+                                    updateQuestion(index, 'option_d', e.target.value)
+                                  }
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">
+                                To'g'ri javob (A, B, C yoki D)
+                              </label>
+                              <select
+                                value={question.correct_option}
+                                onChange={(e) =>
+                                  updateQuestion(index, 'correct_option', e.target.value)
+                                }
+                                required
+                                className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                              >
+                                <option value="">Tanlang...</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                              </select>
+                            </div>
+                          </>
+                        ) : (
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              To'g'ri javob
+                            </label>
+                            <Input
+                              value={question.correct_answer}
+                              onChange={(e) =>
+                                updateQuestion(index, 'correct_answer', e.target.value)
+                              }
+                              required
+                            />
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button type="submit" disabled={isSubmittingForm}>
+                  {isSubmittingForm
+                    ? "Saqlanmoqda..."
+                    : editingMaterial
+                      ? "Yangilash"
+                      : "Yaratish"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateForm(false)
+                    setEditingMaterial(null)
+                    setFormData({ title: "", short_description: "", content: "" })
+                    setQuestions([{
+                      question_type: 'multiple_choice',
+                      question_text: '',
+                      option_a: '',
+                      option_b: '',
+                      option_c: '',
+                      option_d: '',
+                      correct_option: '',
+                      correct_answer: '',
+                    }])
+                    setDeletedQuestionIds([])
+                    setActionError(null)
+                  }}
+                >
+                  Bekor qilish
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error */}
+      {error && (
+        <Card className="mb-6 border-red-200">
+          <CardContent className="p-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Materials List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {materials.map((material) => (
+          <Card key={material.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg mb-2">{material.title}</CardTitle>
+                  {material.short_description && (
+                    <p className="text-sm text-muted-foreground">
+                      {material.short_description}
+                    </p>
+                  )}
+                </div>
+                <BookOpen className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileQuestion className="w-4 h-4" />
+                  <span>{material.questions_count || 0} ta savol</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(material)}
+                    className="flex-1"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Tahrirlash
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(material.id)}
+                    disabled={deletingId === material.id}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {totalCount > pageSize && (
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6">
+          <p className="text-sm text-muted-foreground">
+            {Math.min((currentPage - 1) * pageSize + 1, totalCount)}-
+            {Math.min(currentPage * pageSize, totalCount)} / {totalCount} ta material
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={!hasPreviousPage}
+            >
+              Oldingi
+            </Button>
+            <span className="text-sm">
+              {currentPage} / {Math.max(1, Math.ceil(totalCount / pageSize))}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={!hasNextPage}
+            >
+              Keyingi
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {materials.length === 0 && !isLoading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">
+              {searchQuery
+                ? "Hech qanday material topilmadi"
+                : "Hozircha materiallar yo'q"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
