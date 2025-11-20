@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { apiService } from "@/lib/api-service"
+import { adminApiService } from "@/lib/api-service"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, FileQuestion, Users, BarChart3, TrendingUp } from "lucide-react"
 
@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const statistics = await apiService.adminGetStatistics()
+        const statistics = await adminApiService.adminGetStatistics()
         setStats(statistics)
       } catch (err: any) {
         console.error("Stats load error:", err)

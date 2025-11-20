@@ -37,10 +37,7 @@ export default function LoginPage() {
       }
 
       // API orqali login qilish
-      const tokens = await apiService.login({ username, password })
-      
-      // Tokenlarni saqlash
-      storageService.setTokens(tokens.access, tokens.refresh)
+      await apiService.login({ username, password })
       
       // Profil ma'lumotlarini olish
       const userProfile = await apiService.getProfile()

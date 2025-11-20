@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { apiService, type ReadingMaterial, type Question } from "@/lib/api-service"
+import { useEffect, useState, type ChangeEvent } from "react"
+import { adminApiService, type ReadingMaterial } from "@/lib/api-service"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ import {
   FileQuestion,
   X
 } from "lucide-react"
+import { getMediaUrl } from "@/lib/utils"
 
 interface QuestionFormData {
   id?: number
@@ -43,6 +44,10 @@ export default function AdminMaterialsPage() {
     short_description: "",
     content: "",
   })
+  const [audioFile, setAudioFile] = useState<File | null>(null)
+  const [audioPreview, setAudioPreview] = useState<string | null>(null)
+  const [audioPreviewObjectUrl, setAudioPreviewObjectUrl] = useState<string | null>(null)
+  const [audioRemoveRequested, setAudioRemoveRequested] = useState(false)
   const [isSubmittingForm, setIsSubmittingForm] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -63,13 +68,21 @@ export default function AdminMaterialsPage() {
   const pageSize = 20
 
   useEffect(() => {
+    return () => {
+      if (audioPreviewObjectUrl) {
+        URL.revokeObjectURL(audioPreviewObjectUrl)
+      }
+    }
+  }, [audioPreviewObjectUrl])
+
+  useEffect(() => {
     loadMaterials()
   }, [searchQuery, currentPage])
 
   const loadMaterials = async () => {
     try {
       setIsLoading(true)
-      const data = await apiService.adminGetReadingMaterials({
+      const data = await adminApiService.adminGetReadingMaterials({
         page: currentPage,
         search: searchQuery || undefined,
       })
@@ -86,6 +99,16 @@ export default function AdminMaterialsPage() {
     }
   }
 
+  const resetAudioState = () => {
+    if (audioPreviewObjectUrl) {
+      URL.revokeObjectURL(audioPreviewObjectUrl)
+    }
+    setAudioFile(null)
+    setAudioPreview(null)
+    setAudioPreviewObjectUrl(null)
+    setAudioRemoveRequested(false)
+  }
+
   const handleCreate = () => {
     setActionError(null)
     setFormData({ title: "", short_description: "", content: "" })
@@ -100,6 +123,7 @@ export default function AdminMaterialsPage() {
       correct_answer: '',
     }])
     setDeletedQuestionIds([])
+    resetAudioState()
     setEditingMaterial(null)
     setShowCreateForm(true)
   }
@@ -113,10 +137,12 @@ export default function AdminMaterialsPage() {
     })
     setEditingMaterial(material)
     setDeletedQuestionIds([])
+    resetAudioState()
+    setAudioPreview(material.audio ? getMediaUrl(material.audio) : null)
     
     // Material savollarini yuklash
     try {
-      const materialQuestionsResponse = await apiService.adminGetQuestions({ 
+      const materialQuestionsResponse = await adminApiService.adminGetQuestions({ 
         reading_material: material.id,
         page_size: 200,
       })
@@ -197,7 +223,7 @@ export default function AdminMaterialsPage() {
 
     try {
       setDeletingId(id)
-      await apiService.adminDeleteReadingMaterial(id)
+      await adminApiService.adminDeleteReadingMaterial(id)
       await loadMaterials()
     } catch (err: any) {
       alert(err.message || "O'chirishda xatolik")
@@ -206,25 +232,71 @@ export default function AdminMaterialsPage() {
     }
   }
 
+  const handleAudioChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null
+    if (audioPreviewObjectUrl) {
+      URL.revokeObjectURL(audioPreviewObjectUrl)
+      setAudioPreviewObjectUrl(null)
+    }
+    if (file) {
+      const objectUrl = URL.createObjectURL(file)
+      setAudioFile(file)
+      setAudioPreview(objectUrl)
+      setAudioPreviewObjectUrl(objectUrl)
+      setAudioRemoveRequested(false)
+    } else {
+      setAudioFile(null)
+      if (editingMaterial?.audio) {
+        setAudioPreview(getMediaUrl(editingMaterial.audio))
+      } else {
+        setAudioPreview(null)
+      }
+    }
+  }
+
+  const handleRemoveAudio = () => {
+    if (audioPreviewObjectUrl) {
+      URL.revokeObjectURL(audioPreviewObjectUrl)
+      setAudioPreviewObjectUrl(null)
+    }
+    setAudioFile(null)
+    setAudioPreview(null)
+    setAudioRemoveRequested(true)
+  }
+
+  const buildMaterialPayload = () => {
+    const payload = new FormData()
+    payload.append('title', formData.title)
+    payload.append('short_description', formData.short_description || '')
+    payload.append('content', formData.content)
+    if (audioFile) {
+      payload.append('audio', audioFile)
+    } else if (audioRemoveRequested) {
+      payload.append('audio', '')
+    }
+    return payload
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setActionError(null)
     setIsSubmittingForm(true)
     try {
       let materialId: number
+      const payload = buildMaterialPayload()
       
       if (editingMaterial) {
-        await apiService.adminUpdateReadingMaterial(editingMaterial.id, formData)
+        await adminApiService.adminUpdateReadingMaterial(editingMaterial.id, payload)
         materialId = editingMaterial.id
       } else {
-        const newMaterial = await apiService.adminCreateReadingMaterial(formData)
+        const newMaterial = await adminApiService.adminCreateReadingMaterial(payload)
         materialId = newMaterial.id
       }
 
       // O'chirilgan savollarni o'chirish
       for (const questionId of deletedQuestionIds) {
         try {
-          await apiService.adminDeleteQuestion(questionId)
+          await adminApiService.adminDeleteQuestion(questionId)
         } catch (err) {
           console.error("Question delete error:", err)
         }
@@ -250,16 +322,17 @@ export default function AdminMaterialsPage() {
 
         if (question.id) {
           // Mavjud savolni yangilash
-          await apiService.adminUpdateQuestion(question.id, questionData)
+          await adminApiService.adminUpdateQuestion(question.id, questionData)
         } else {
           // Yangi savol yaratish
-          await apiService.adminCreateQuestion(questionData)
+          await adminApiService.adminCreateQuestion(questionData)
         }
       }
 
       setShowCreateForm(false)
       setEditingMaterial(null)
       setFormData({ title: "", short_description: "", content: "" })
+      resetAudioState()
       setQuestions([{
         question_type: 'multiple_choice',
         question_text: '',
@@ -369,6 +442,37 @@ export default function AdminMaterialsPage() {
                     rows={10}
                     className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
                   />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Audio fayl (ixtiyoriy)
+                  </label>
+                  <Input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleAudioChange}
+                  />
+                  {audioPreview ? (
+                    <div className="mt-3 p-3 border border-border rounded-lg space-y-3">
+                      <audio controls src={audioPreview} className="w-full" />
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Audio yuklangan.</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={handleRemoveAudio}
+                        >
+                          Audioni o'chirish
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Audio fayl yuklanmagan.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -552,6 +656,7 @@ export default function AdminMaterialsPage() {
                     setShowCreateForm(false)
                     setEditingMaterial(null)
                     setFormData({ title: "", short_description: "", content: "" })
+                    resetAudioState()
                     setQuestions([{
                       question_type: 'multiple_choice',
                       question_text: '',
@@ -596,6 +701,11 @@ export default function AdminMaterialsPage() {
                       {material.short_description}
                     </p>
                   )}
+                    {material.audio && (
+                      <span className="inline-flex items-center mt-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        Audio mavjud
+                      </span>
+                    )}
                 </div>
                 <BookOpen className="w-5 h-5 text-muted-foreground" />
               </div>

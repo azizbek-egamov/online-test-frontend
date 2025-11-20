@@ -70,42 +70,81 @@ export interface ReadingMaterial {
   title: string
   short_description?: string
   content: string
+  audio?: string | null
   created_at: string
   questions_count: number
   questions?: Question[]
 }
 
+interface ApiServiceOptions {
+  accessTokenKey?: string
+  refreshTokenKey?: string
+  tokenEndpoint?: string
+  refreshEndpoint?: string
+  logoutEndpoint?: string
+}
+
 class ApiService {
+  constructor(private options: ApiServiceOptions = {}) {}
+
+  private get accessTokenKey(): string {
+    return this.options.accessTokenKey || 'access_token'
+  }
+
+  private get refreshTokenKey(): string {
+    return this.options.refreshTokenKey || 'refresh_token'
+  }
+
+  private get tokenEndpoint(): string {
+    return this.options.tokenEndpoint || '/auth/token/'
+  }
+
+  private get refreshEndpoint(): string {
+    return this.options.refreshEndpoint || '/auth/token/refresh/'
+  }
+
+  private get logoutEndpoint(): string {
+    return this.options.logoutEndpoint || '/auth/logout/'
+  }
+
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem('access_token')
+    return localStorage.getItem(this.accessTokenKey)
   }
 
   private getRefreshToken(): string | null {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem('refresh_token')
+    return localStorage.getItem(this.refreshTokenKey)
   }
 
   private setTokens(access: string, refresh: string): void {
     if (typeof window === 'undefined') return
-    localStorage.setItem('access_token', access)
-    localStorage.setItem('refresh_token', refresh)
+    localStorage.setItem(this.accessTokenKey, access)
+    localStorage.setItem(this.refreshTokenKey, refresh)
   }
 
   clearTokens(): void {
     if (typeof window === 'undefined') return
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    localStorage.removeItem(this.accessTokenKey)
+    localStorage.removeItem(this.refreshTokenKey)
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryOnAuthError = true
   ): Promise<T> {
     const token = this.getAuthToken()
+    const isFormData =
+      typeof FormData !== 'undefined' && options.body instanceof FormData
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
+    }
+
+    if (!isFormData) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json'
+    } else if (headers['Content-Type']) {
+      delete headers['Content-Type']
     }
 
     if (token) {
@@ -119,6 +158,17 @@ class ApiService {
     
     // Xato holatlar uchun JSON bo'lmasa ham xavfsiz ishlash
     if (!response.ok) {
+      if (response.status === 401 && retryOnAuthError && this.getRefreshToken()) {
+        try {
+          await this.refreshToken()
+          return this.request<T>(endpoint, options, false)
+        } catch (refreshError) {
+          this.clearTokens()
+          throw refreshError instanceof Error
+            ? refreshError
+            : new Error("Sessiya tugadi. Iltimos, qaytadan tizimga kiring.")
+        }
+      }
       let errorData: any = {}
       try {
         const contentType = response.headers.get('content-type') || ''
@@ -128,11 +178,27 @@ class ApiService {
       } catch {
         // body bo'sh bo'lsa yoki JSON bo'lmasa, e'tibor bermaymiz
       }
-      throw new Error(
-        errorData.detail ||
-          errorData.message ||
-          `HTTP error! status: ${response.status}`
-      )
+
+      const extractErrorMessage = (data: any): string | undefined => {
+        if (!data) return undefined
+        if (typeof data === 'string') return data
+        if (Array.isArray(data)) return extractErrorMessage(data[0])
+        if (typeof data === 'object') {
+          if (data.detail) return extractErrorMessage(data.detail)
+          if (data.message) return extractErrorMessage(data.message)
+          const firstKey = Object.keys(data)[0]
+          if (firstKey) {
+            return extractErrorMessage(data[firstKey])
+          }
+        }
+        return undefined
+      }
+
+      const message =
+        extractErrorMessage(errorData) ||
+        `HTTP error! status: ${response.status}`
+
+      throw new Error(message)
     }
 
     // DELETE kabi 204 No Content javoblarda JSON pars qilishga urunmaslik
@@ -162,7 +228,7 @@ class ApiService {
   }
 
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>('/auth/token/', {
+    const response = await this.request<LoginResponse>(this.tokenEndpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -176,10 +242,14 @@ class ApiService {
       throw new Error('No refresh token available')
     }
 
-    const response = await this.request<LoginResponse>('/auth/token/refresh/', {
-      method: 'POST',
-      body: JSON.stringify({ refresh }),
-    })
+    const response = await this.request<LoginResponse>(
+      this.refreshEndpoint,
+      {
+        method: 'POST',
+        body: JSON.stringify({ refresh }),
+      },
+      false
+    )
     this.setTokens(response.access, response.refresh)
     return response
   }
@@ -197,6 +267,21 @@ class ApiService {
   }
 
   async logout(): Promise<void> {
+    const refresh = this.getRefreshToken()
+    if (refresh) {
+      try {
+        await this.request(
+          this.logoutEndpoint,
+          {
+            method: 'POST',
+            body: JSON.stringify({ refresh }),
+          },
+          false
+        )
+      } catch (error) {
+        console.warn("Logout warning:", error)
+      }
+    }
     this.clearTokens()
   }
 
@@ -285,17 +370,19 @@ class ApiService {
     return this.request<ReadingMaterial>(`/admin/reading-materials/${id}/`)
   }
 
-  async adminCreateReadingMaterial(data: Partial<ReadingMaterial>): Promise<ReadingMaterial> {
+  async adminCreateReadingMaterial(data: Partial<ReadingMaterial> | FormData): Promise<ReadingMaterial> {
+    const body = data instanceof FormData ? data : JSON.stringify(data)
     return this.request<ReadingMaterial>('/admin/reading-materials/', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body,
     })
   }
 
-  async adminUpdateReadingMaterial(id: number, data: Partial<ReadingMaterial>): Promise<ReadingMaterial> {
+  async adminUpdateReadingMaterial(id: number, data: Partial<ReadingMaterial> | FormData): Promise<ReadingMaterial> {
+    const body = data instanceof FormData ? data : JSON.stringify(data)
     return this.request<ReadingMaterial>(`/admin/reading-materials/${id}/`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body,
     })
   }
 
@@ -303,6 +390,28 @@ class ApiService {
     return this.request<void>(`/admin/reading-materials/${id}/`, {
       method: 'DELETE',
     })
+  }
+
+  // Admin - Users
+  async adminGetUsers(params?: { page?: number; search?: string }): Promise<PaginatedResponse<UserResponse>> {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.search) queryParams.append('search', params.search)
+    const query = queryParams.toString()
+    return this.request<PaginatedResponse<UserResponse>>(`/admin/users/${query ? `?${query}` : ''}`)
+  }
+
+  async adminGetUser(id: number): Promise<UserResponse> {
+    return this.request<UserResponse>(`/admin/users/${id}/`)
+  }
+
+  async adminGetUserResults(id: number, params?: { page?: number }): Promise<PaginatedResponse<UserResult>> {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', params.page.toString())
+    const query = queryParams.toString()
+    return this.request<PaginatedResponse<UserResult>>(
+      `/admin/users/${id}/results/${query ? `?${query}` : ''}`
+    )
   }
 
   // Admin - Questions
@@ -407,4 +516,9 @@ export interface Question {
 }
 
 export const apiService = new ApiService()
+export const adminApiService = new ApiService({
+  accessTokenKey: 'admin_access_token',
+  refreshTokenKey: 'admin_refresh_token',
+  tokenEndpoint: '/auth/admin/token/',
+})
 

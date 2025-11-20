@@ -63,8 +63,7 @@ export default function SignupPage() {
       })
 
       // Avtomatik login qilish
-      const tokens = await apiService.login({ username, password })
-      storageService.setTokens(tokens.access, tokens.refresh)
+      await apiService.login({ username, password })
 
       // User ma'lumotlarini formatlash
       const user = {

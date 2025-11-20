@@ -32,8 +32,11 @@ export default function TestQuestionsComponent({
 
   if (questions.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 text-center">
-        <p className="text-muted-foreground">Bu material uchun savollar mavjud emas.</p>
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 text-center space-y-4">
+        <p className="text-muted-foreground text-lg">Bu material uchun savollar mavjud emas.</p>
+        <Button onClick={() => router.push("/dashboard")} variant="outline">
+          Dashboard'ga qaytish
+        </Button>
       </div>
     )
   }

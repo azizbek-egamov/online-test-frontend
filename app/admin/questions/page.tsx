@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { apiService, type Question, type ReadingMaterial } from "@/lib/api-service"
+import { adminApiService, type Question, type ReadingMaterial } from "@/lib/api-service"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,7 +55,7 @@ export default function AdminQuestionsPage() {
 
   const loadMaterials = async () => {
     try {
-      const response = await apiService.adminGetReadingMaterials({ page_size: 200 })
+      const response = await adminApiService.adminGetReadingMaterials({ page_size: 200 })
       setMaterials(response.results)
     } catch (err) {
       console.error("Materials load error:", err)
@@ -71,7 +71,7 @@ export default function AdminQuestionsPage() {
       if (searchQuery) params.search = searchQuery
       params.page = currentPage
 
-      const data = await apiService.adminGetQuestions(params)
+      const data = await adminApiService.adminGetQuestions(params)
       setQuestions(data.results)
       setTotalCount(data.count)
       setHasNextPage(Boolean(data.next))
@@ -126,7 +126,7 @@ export default function AdminQuestionsPage() {
 
     try {
       setDeletingId(id)
-      await apiService.adminDeleteQuestion(id)
+      await adminApiService.adminDeleteQuestion(id)
       await loadQuestions()
     } catch (err: any) {
       alert(err.message || "O'chirishda xatolik")
@@ -157,9 +157,9 @@ export default function AdminQuestionsPage() {
       }
 
       if (editingQuestion) {
-        await apiService.adminUpdateQuestion(editingQuestion.id, submitData)
+        await adminApiService.adminUpdateQuestion(editingQuestion.id, submitData)
       } else {
-        await apiService.adminCreateQuestion(submitData)
+        await adminApiService.adminCreateQuestion(submitData)
       }
       setShowCreateForm(false)
       setEditingQuestion(null)

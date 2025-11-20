@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { storageService, type User } from "@/lib/storage-service"
-import { apiService } from "@/lib/api-service"
+import { adminApiService } from "@/lib/api-service"
 import { Button } from "@/components/ui/button"
 import { 
   LayoutDashboard, 
@@ -13,7 +13,8 @@ import {
   BarChart3, 
   LogOut, 
   Home,
-  Settings
+  Settings,
+  Users
 } from "lucide-react"
 
 export default function AdminLayout({
@@ -22,21 +23,32 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const isLoginRoute = pathname === '/admin/login'
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [accessError, setAccessError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (isLoginRoute) {
+      setIsLoading(false)
+      setAccessError(null)
+      return
+    }
+    
     const checkAccess = async () => {
       try {
-        const currentUser = storageService.getCurrentUser()
-        if (!currentUser || !storageService.isAuthenticated()) {
-          router.push("/login")
+        const currentAdminUser = storageService.getAdminUser()
+        if (currentAdminUser) {
+          setUser(currentAdminUser)
+        }
+        if (!currentAdminUser || !storageService.isAdminAuthenticated()) {
+          router.push("/admin/login")
           return
         }
 
-        const userProfile = await apiService.getProfile()
+        const userProfile = await adminApiService.getProfile()
         const userData = {
           id: userProfile.id,
           username: userProfile.username,
@@ -48,9 +60,10 @@ export default function AdminLayout({
           last_name: userProfile.last_name,
         }
         setUser(userData)
+        storageService.setAdminUser(userData)
 
         // Admin access tekshirish
-        const adminCheck = await apiService.checkAdminAccess()
+        const adminCheck = await adminApiService.checkAdminAccess()
         if (!adminCheck.is_admin) {
           setAccessError("Sizda admin paneliga kirish ruxsati mavjud emas.")
           return
@@ -59,8 +72,8 @@ export default function AdminLayout({
       } catch (err: any) {
         console.error("Admin access error:", err)
         if (err?.message?.includes("401")) {
-          setAccessError("Sessiya tugadi. Iltimos, qaytadan tizimga kiring.")
-          storageService.logout()
+          setAccessError("Admin sessiyasi tugadi. Iltimos, qaytadan tizimga kiring.")
+          storageService.logoutAdmin()
         } else {
           setAccessError(err?.message || "Admin panelga kirishda xatolik yuz berdi.")
         }
@@ -70,17 +83,21 @@ export default function AdminLayout({
     }
 
     checkAccess()
-  }, [router])
+  }, [router, isLoginRoute])
 
   const handleLogout = async () => {
     try {
-      await apiService.logout()
+      await adminApiService.logout()
     } catch (error) {
       console.error("Logout error:", error)
     } finally {
-      storageService.logout()
-      router.push("/")
+      storageService.logoutAdmin()
+      router.push("/admin/login")
     }
+  }
+
+  if (isLoginRoute) {
+    return <>{children}</>
   }
 
   if (isLoading) {
@@ -97,7 +114,7 @@ export default function AdminLayout({
         <div className="max-w-md w-full border border-border rounded-xl bg-card p-6 text-center space-y-4">
           <p className="text-lg font-semibold text-destructive">{accessError}</p>
           <div className="flex flex-col gap-2">
-            <Button onClick={() => router.push("/login")} className="gap-2">
+            <Button onClick={() => router.push("/admin/login")} className="gap-2">
               Admin tizimga kirish
             </Button>
             <Button variant="outline" onClick={() => router.push("/dashboard")}>
@@ -137,6 +154,15 @@ export default function AdminLayout({
               >
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
+              </Button>
+            </Link>
+            <Link href="/admin/users">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <Users className="w-4 h-4" />
+                Foydalanuvchilar
               </Button>
             </Link>
             <Link href="/admin/materials">

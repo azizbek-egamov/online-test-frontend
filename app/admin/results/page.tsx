@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { apiService, type UserResult, type ReadingMaterial } from "@/lib/api-service"
+import { adminApiService, type UserResult, type ReadingMaterial } from "@/lib/api-service"
 import { formatDateUz } from "@/lib/date-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,7 +30,7 @@ export default function AdminResultsPage() {
 
   const loadMaterials = async () => {
     try {
-      const response = await apiService.adminGetReadingMaterials({ page_size: 200 })
+      const response = await adminApiService.adminGetReadingMaterials({ page_size: 200 })
       setMaterials(response.results)
     } catch (err) {
       console.error("Materials load error:", err)
@@ -45,7 +45,7 @@ export default function AdminResultsPage() {
       if (searchQuery) params.search = searchQuery
       params.page = currentPage
 
-      const data = await apiService.adminGetResults(params)
+      const data = await adminApiService.adminGetResults(params)
       setResults(data.results)
       setTotalCount(data.count)
       setHasNextPage(Boolean(data.next))

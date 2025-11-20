@@ -22,9 +22,12 @@ export interface TestResult {
 
 class StorageService {
   private sessionKey = "session_user"
+  private adminSessionKey = "admin_session_user"
   private historyPrefix = "user_history_"
   private tokenKey = "access_token"
   private refreshTokenKey = "refresh_token"
+  private adminTokenKey = "admin_access_token"
+  private adminRefreshTokenKey = "admin_refresh_token"
 
   // Session Management
   getCurrentUser(): User | null {
@@ -36,6 +39,17 @@ class StorageService {
   setCurrentUser(user: User): void {
     if (typeof window === 'undefined') return
     localStorage.setItem(this.sessionKey, JSON.stringify(user))
+  }
+
+  getAdminUser(): User | null {
+    if (typeof window === 'undefined') return null
+    const session = localStorage.getItem(this.adminSessionKey)
+    return session ? JSON.parse(session) : null
+  }
+
+  setAdminUser(user: User): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(this.adminSessionKey, JSON.stringify(user))
   }
 
   getToken(): string | null {
@@ -54,6 +68,12 @@ class StorageService {
     localStorage.setItem(this.refreshTokenKey, refresh)
   }
 
+  setAdminTokens(access: string, refresh: string): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(this.adminTokenKey, access)
+    localStorage.setItem(this.adminRefreshTokenKey, refresh)
+  }
+
   logout(): void {
     if (typeof window === 'undefined') return
     localStorage.removeItem(this.sessionKey)
@@ -61,8 +81,20 @@ class StorageService {
     localStorage.removeItem(this.refreshTokenKey)
   }
 
+  logoutAdmin(): void {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(this.adminSessionKey)
+    localStorage.removeItem(this.adminTokenKey)
+    localStorage.removeItem(this.adminRefreshTokenKey)
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken()
+  }
+
+  isAdminAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false
+    return !!localStorage.getItem(this.adminTokenKey)
   }
 
   // User Management (kept for backward compatibility, but should use API)
