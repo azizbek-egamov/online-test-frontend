@@ -10,23 +10,6 @@ export const metadata: Metadata = {
   title: "O'qish Testi - Bola-dostona O'qish Platformasi",
   description: "Bolalar uchun interactive o'qish testlari va o'quv platformasi",
   generator: "ardentsoft.uz",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
 }
 
 export default function RootLayout({
