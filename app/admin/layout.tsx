@@ -14,7 +14,8 @@ import {
   LogOut, 
   Home,
   Settings,
-  Users
+  Users,
+  Folder
 } from "lucide-react"
 
 export default function AdminLayout({
@@ -163,6 +164,15 @@ export default function AdminLayout({
               >
                 <Users className="w-4 h-4" />
                 Foydalanuvchilar
+              </Button>
+            </Link>
+            <Link href="/admin/categories">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <Folder className="w-4 h-4" />
+                Kategoriyalar
               </Button>
             </Link>
             <Link href="/admin/materials">

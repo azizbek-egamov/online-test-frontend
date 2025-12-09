@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, type ChangeEvent } from "react"
-import { adminApiService, type ReadingMaterial } from "@/lib/api-service"
+import { adminApiService, type ReadingMaterial, type Category } from "@/lib/api-service"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,8 @@ import {
   Trash2, 
   BookOpen,
   FileQuestion,
-  X
+  X,
+  Folder
 } from "lucide-react"
 import { getMediaUrl } from "@/lib/utils"
 
@@ -30,9 +31,11 @@ interface QuestionFormData {
 
 export default function AdminMaterialsPage() {
   const [materials, setMaterials] = useState<ReadingMaterial[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [hasNextPage, setHasNextPage] = useState(false)
@@ -43,6 +46,7 @@ export default function AdminMaterialsPage() {
     title: "",
     short_description: "",
     content: "",
+    category_id: "",
   })
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [audioPreview, setAudioPreview] = useState<string | null>(null)
@@ -76,8 +80,18 @@ export default function AdminMaterialsPage() {
   }, [audioPreviewObjectUrl])
 
   useEffect(() => {
+    loadCategories()
     loadMaterials()
   }, [searchQuery, currentPage])
+
+  const loadCategories = async () => {
+    try {
+      const data = await adminApiService.adminGetCategories({ page_size: 200 })
+      setCategories(data.results)
+    } catch (err) {
+      console.error("Categories load error:", err)
+    }
+  }
 
   const loadMaterials = async () => {
     try {
@@ -111,7 +125,7 @@ export default function AdminMaterialsPage() {
 
   const handleCreate = () => {
     setActionError(null)
-    setFormData({ title: "", short_description: "", content: "" })
+    setFormData({ title: "", short_description: "", content: "", category_id: "" })
     setQuestions([{
       question_type: 'multiple_choice',
       question_text: '',
@@ -134,6 +148,7 @@ export default function AdminMaterialsPage() {
       title: material.title,
       short_description: material.short_description || "",
       content: material.content,
+      category_id: material.category?.id?.toString() || "",
     })
     setEditingMaterial(material)
     setDeletedQuestionIds([])
@@ -269,6 +284,9 @@ export default function AdminMaterialsPage() {
     payload.append('title', formData.title)
     payload.append('short_description', formData.short_description || '')
     payload.append('content', formData.content)
+    if (formData.category_id) {
+      payload.append('category_id', formData.category_id)
+    }
     if (audioFile) {
       payload.append('audio', audioFile)
     } else if (audioRemoveRequested) {
@@ -331,7 +349,7 @@ export default function AdminMaterialsPage() {
 
       setShowCreateForm(false)
       setEditingMaterial(null)
-      setFormData({ title: "", short_description: "", content: "" })
+      setFormData({ title: "", short_description: "", content: "", category_id: "" })
       resetAudioState()
       setQuestions([{
         question_type: 'multiple_choice',
@@ -373,9 +391,9 @@ export default function AdminMaterialsPage() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
+      {/* Search and Category Filter */}
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        <div className="relative max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Qidirish..."
@@ -387,6 +405,34 @@ export default function AdminMaterialsPage() {
             className="pl-10"
           />
         </div>
+        {categories.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedCategory === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectedCategory(null)
+                setCurrentPage(1)
+              }}
+            >
+              Barchasi
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory(category.id)
+                  setCurrentPage(1)
+                }}
+              >
+                <Folder className="w-4 h-4 mr-2" />
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Create/Edit Form */}
@@ -407,6 +453,23 @@ export default function AdminMaterialsPage() {
               {/* Material Fields */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Material ma'lumotlari</h3>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Kategoriya</label>
+                  <select
+                    value={formData.category_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category_id: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                  >
+                    <option value="">Kategoriya tanlang...</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Sarlavha</label>
                   <Input
@@ -655,7 +718,7 @@ export default function AdminMaterialsPage() {
                   onClick={() => {
                     setShowCreateForm(false)
                     setEditingMaterial(null)
-                    setFormData({ title: "", short_description: "", content: "" })
+                    setFormData({ title: "", short_description: "", content: "", category_id: "" })
                     resetAudioState()
                     setQuestions([{
                       question_type: 'multiple_choice',
@@ -688,13 +751,185 @@ export default function AdminMaterialsPage() {
         </Card>
       )}
 
-      {/* Materials List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {materials.map((material) => (
+      {/* Materials List - Grouped by Categories */}
+      {categories.length > 0 && selectedCategory === null ? (
+        <>
+          {/* Kategoriyalar bo'yicha guruhlangan materiallar */}
+          {categories.map((category) => {
+            const categoryMaterials = materials.filter(
+              (m) => m.category?.id === category.id
+            )
+            if (categoryMaterials.length === 0) return null
+
+            return (
+              <div key={category.id} className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Folder className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">{category.name}</h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({categoryMaterials.length} ta)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categoryMaterials.map((material) => (
+                    <Card key={material.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg mb-2">{material.title}</CardTitle>
+                            {material.short_description && (
+                              <p className="text-sm text-muted-foreground">
+                                {material.short_description}
+                              </p>
+                            )}
+                              {material.audio && (
+                                <span className="inline-flex items-center mt-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                  Audio mavjud
+                                </span>
+                              )}
+                          </div>
+                          <BookOpen className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <FileQuestion className="w-4 h-4" />
+                            <span>{material.questions_count || 0} ta savol</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(material)}
+                              className="flex-1"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Tahrirlash
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(material.id)}
+                              disabled={deletingId === material.id}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+          
+          {/* Kategoriyaga bog'lanmagan materiallar */}
+          {(() => {
+            const uncategorizedMaterials = materials.filter(
+              (m) => !m.category || !m.category.id
+            )
+            
+            if (uncategorizedMaterials.length === 0) return null
+
+            return (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Folder className="w-5 h-5 text-muted-foreground" />
+                  <h2 className="text-xl font-semibold">Kategoriyaga bog'lanmagan</h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({uncategorizedMaterials.length} ta)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {uncategorizedMaterials.map((material) => (
+                    <Card key={material.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg mb-2">{material.title}</CardTitle>
+                            {material.short_description && (
+                              <p className="text-sm text-muted-foreground">
+                                {material.short_description}
+                              </p>
+                            )}
+                              {material.audio && (
+                                <span className="inline-flex items-center mt-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                  Audio mavjud
+                                </span>
+                              )}
+                          </div>
+                          <BookOpen className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <FileQuestion className="w-4 h-4" />
+                            <span>{material.questions_count || 0} ta savol</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(material)}
+                              className="flex-1"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Tahrirlash
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(material.id)}
+                              disabled={deletingId === material.id}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+        </>
+      ) : (
+        <>
+          {/* Filtered Materials or All Materials */}
+          {(() => {
+            const filteredMaterials = selectedCategory
+              ? materials.filter((m) => m.category?.id === selectedCategory)
+              : materials
+
+            return filteredMaterials.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    {searchQuery || selectedCategory
+                      ? "Hech qanday material topilmadi"
+                      : "Hozircha materiallar yo'q"}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMaterials.map((material) => (
           <Card key={material.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
+                  {material.category && (
+                    <span className="inline-flex items-center mb-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      {material.category.name}
+                    </span>
+                  )}
                   <CardTitle className="text-lg mb-2">{material.title}</CardTitle>
                   {material.short_description && (
                     <p className="text-sm text-muted-foreground">
@@ -738,9 +973,13 @@ export default function AdminMaterialsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
-      </div>
+                </Card>
+              ))}
+            </div>
+            )
+          })()}
+        </>
+      )}
 
       {totalCount > pageSize && (
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6">
@@ -774,18 +1013,6 @@ export default function AdminMaterialsPage() {
         </div>
       )}
 
-      {materials.length === 0 && !isLoading && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              {searchQuery
-                ? "Hech qanday material topilmadi"
-                : "Hozircha materiallar yo'q"}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

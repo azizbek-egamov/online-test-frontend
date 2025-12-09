@@ -65,6 +65,12 @@ export interface StatisticsResponse {
   recent_results: UserResult[]
 }
 
+export interface Category {
+  id: number
+  name: string
+  created_at: string
+}
+
 export interface ReadingMaterial {
   id: number
   title: string
@@ -73,6 +79,7 @@ export interface ReadingMaterial {
   audio?: string | null
   created_at: string
   questions_count: number
+  category?: Category
   questions?: Question[]
 }
 
@@ -298,6 +305,28 @@ class ApiService {
     return this.request<StatisticsResponse>('/results/statistics/')
   }
 
+  // Categories methods
+  async getCategories(): Promise<Category[]> {
+    const response = await this.request<{
+      results?: Category[]
+      count?: number
+      next?: string | null
+      previous?: string | null
+    } | Category[]>('/categories/')
+    
+    // Pagination response formatini tekshirish
+    if (Array.isArray(response)) {
+      return response
+    }
+    
+    // Agar pagination formatida bo'lsa
+    if (response && 'results' in response && Array.isArray(response.results)) {
+      return response.results
+    }
+    
+    return []
+  }
+
   // Reading Materials methods
   async getReadingMaterials(): Promise<ReadingMaterial[]> {
     const response = await this.request<{
@@ -498,6 +527,50 @@ class ApiService {
     average_percentage: number
   }> {
     return this.request('/admin/results/statistics/')
+  }
+
+  // Admin - Categories
+  async adminGetCategories(params?: { page?: number; page_size?: number }): Promise<PaginatedResponse<Category>> {
+    const queryParams = new URLSearchParams()
+    queryParams.append('page_size', (params?.page_size || 200).toString())
+    if (params?.page) queryParams.append('page', params.page.toString())
+    const queryString = queryParams.toString()
+    const response = await this.request<any>(`/admin/categories/${queryString ? `?${queryString}` : ''}`)
+    
+    if (Array.isArray(response)) {
+      return { results: response, count: response.length, next: null, previous: null }
+    }
+    
+    return {
+      results: response?.results || [],
+      count: response?.count ?? (response?.results?.length || 0),
+      next: response?.next ?? null,
+      previous: response?.previous ?? null,
+    }
+  }
+
+  async adminGetCategory(id: number): Promise<Category> {
+    return this.request<Category>(`/admin/categories/${id}/`)
+  }
+
+  async adminCreateCategory(data: { name: string }): Promise<Category> {
+    return this.request<Category>('/admin/categories/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async adminUpdateCategory(id: number, data: { name: string }): Promise<Category> {
+    return this.request<Category>(`/admin/categories/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async adminDeleteCategory(id: number): Promise<void> {
+    return this.request<void>(`/admin/categories/${id}/`, {
+      method: 'DELETE',
+    })
   }
 }
 

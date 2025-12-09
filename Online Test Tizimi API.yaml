@@ -1,0 +1,2231 @@
+openapi: 3.0.3
+info:
+  title: Online Test Tizimi API
+  version: 1.0.0
+  description: Online test tizimi uchun REST API dokumentatsiyasi
+paths:
+  /api/admin/categories/:
+    get:
+      operationId: admin_categories_list
+      description: Admin uchun kategoriyalar boshqaruvi.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - Kategoriyalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: admin_categories_create
+      description: Admin uchun kategoriyalar boshqaruvi.
+      tags:
+      - Admin - Kategoriyalar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/admin/categories/{id}/:
+    get:
+      operationId: admin_categories_retrieve
+      description: Admin uchun kategoriyalar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Kategoriya.
+        required: true
+      tags:
+      - Admin - Kategoriyalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: admin_categories_update
+      description: Admin uchun kategoriyalar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Kategoriya.
+        required: true
+      tags:
+      - Admin - Kategoriyalar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: admin_categories_partial_update
+      description: Admin uchun kategoriyalar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Kategoriya.
+        required: true
+      tags:
+      - Admin - Kategoriyalar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: admin_categories_destroy
+      description: Admin uchun kategoriyalar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Kategoriya.
+        required: true
+      tags:
+      - Admin - Kategoriyalar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin/questions/:
+    get:
+      operationId: admin_questions_list
+      description: Admin uchun savollar boshqaruvi.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionList'
+          description: ''
+    post:
+      operationId: admin_questions_create
+      description: Admin uchun savollar boshqaruvi.
+      tags:
+      - Admin - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+  /api/admin/questions/{id}/:
+    get:
+      operationId: admin_questions_retrieve
+      description: Admin uchun savollar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Admin - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    put:
+      operationId: admin_questions_update
+      description: Admin uchun savollar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Admin - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    patch:
+      operationId: admin_questions_partial_update
+      description: Admin uchun savollar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Admin - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    delete:
+      operationId: admin_questions_destroy
+      description: Admin uchun savollar boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Admin - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin/reading-materials/:
+    get:
+      operationId: admin_reading_materials_list
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReadingMaterialList'
+          description: ''
+    post:
+      operationId: admin_reading_materials_create
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      tags:
+      - Admin - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+  /api/admin/reading-materials/{id}/:
+    get:
+      operationId: admin_reading_materials_retrieve
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - Admin - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterialDetail'
+          description: ''
+    put:
+      operationId: admin_reading_materials_update
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - Admin - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+    patch:
+      operationId: admin_reading_materials_partial_update
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - Admin - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+    delete:
+      operationId: admin_reading_materials_destroy
+      description: Admin uchun o'quv materiallari boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - Admin - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin/results/:
+    get:
+      operationId: admin_results_list
+      description: Admin uchun foydalanuvchi natijalari boshqaruvi.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserResultList'
+          description: ''
+  /api/admin/results/{id}/:
+    get:
+      operationId: admin_results_retrieve
+      description: Admin uchun foydalanuvchi natijalari boshqaruvi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Foydalanuvchi natijasi.
+        required: true
+      tags:
+      - Admin - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResult'
+          description: ''
+  /api/admin/results/statistics/:
+    get:
+      operationId: admin_results_statistics_retrieve
+      description: Barcha testlar statistikasi
+      summary: Admin statistikasi
+      tags:
+      - Admin - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/admin/users/:
+    get:
+      operationId: admin_users_list
+      description: Admin uchun foydalanuvchilar bo'limi.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - Foydalanuvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+  /api/admin/users/{id}/:
+    get:
+      operationId: admin_users_retrieve
+      description: Admin uchun foydalanuvchilar bo'limi.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this foydalanuvchi.
+        required: true
+      tags:
+      - Admin - Foydalanuvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/admin/users/{id}/results/:
+    get:
+      operationId: admin_users_results_list
+      description: Admin uchun foydalanuvchilar bo'limi.
+      summary: Foydalanuvchi test natijalari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this foydalanuvchi.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Admin - Foydalanuvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserResultList'
+          description: ''
+  /api/auth/admin/token/:
+    post:
+      operationId: auth_admin_token_create
+      description: Faqat adminlar uchun JWT olish.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Refresh tokenni blacklistga qo'shib foydalanuvchini tizimdan chiqarish
+      summary: Chiqish
+      tags:
+      - Autentifikatsiya
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Joriy foydalanuvchi profil ma'lumotlarini olish
+      summary: Foydalanuvchi profilini olish
+      tags:
+      - Foydalanuvchi
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: auth_profile_update
+      description: Joriy foydalanuvchi profil ma'lumotlarini yangilash
+      summary: Foydalanuvchi profilini yangilash
+      tags:
+      - Foydalanuvchi
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Yangi foydalanuvchi yaratish uchun endpoint
+      summary: Foydalanuvchi ro'yxatdan o'tish
+      tags:
+      - Autentifikatsiya
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/token/:
+    post:
+      operationId: auth_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/categories/:
+    get:
+      operationId: categories_list
+      description: Kategoriyalar ViewSet (faqat o'qish).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Kategoriyalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /api/categories/{id}/:
+    get:
+      operationId: categories_retrieve
+      description: Kategoriyalar ViewSet (faqat o'qish).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Kategoriya.
+        required: true
+      tags:
+      - Kategoriyalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/questions/:
+    get:
+      operationId: questions_list
+      description: Savollar ViewSet.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionList'
+          description: ''
+    post:
+      operationId: questions_create
+      description: Savollar ViewSet.
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+  /api/questions/{id}/:
+    get:
+      operationId: questions_retrieve
+      description: Savollar ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    put:
+      operationId: questions_update
+      description: Savollar ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    patch:
+      operationId: questions_partial_update
+      description: Savollar ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          description: ''
+    delete:
+      operationId: questions_destroy
+      description: Savollar ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reading-materials/:
+    get:
+      operationId: reading_materials_list
+      description: O'quv materiallari ViewSet.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReadingMaterialList'
+          description: ''
+    post:
+      operationId: reading_materials_create
+      description: O'quv materiallari ViewSet.
+      tags:
+      - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+  /api/reading-materials/{id}/:
+    get:
+      operationId: reading_materials_retrieve
+      description: O'quv materiallari ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterialDetail'
+          description: ''
+    put:
+      operationId: reading_materials_update
+      description: O'quv materiallari ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReadingMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+    patch:
+      operationId: reading_materials_partial_update
+      description: O'quv materiallari ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReadingMaterialRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingMaterial'
+          description: ''
+    delete:
+      operationId: reading_materials_destroy
+      description: O'quv materiallari ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reading-materials/{id}/questions/:
+    get:
+      operationId: reading_materials_questions_list
+      description: O'quv materialidagi barcha savollarni olish (to'g'ri javobsiz)
+      summary: O'quv materialidagi savollarni olish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionListList'
+          description: ''
+  /api/reading-materials/{id}/result/:
+    get:
+      operationId: reading_materials_result_retrieve
+      description: O'quv materiali uchun foydalanuvchi test natijasini olish
+      summary: Test natijasini olish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResult'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/reading-materials/{id}/submit_test/:
+    post:
+      operationId: reading_materials_submit_test_create
+      description: Test javoblarini yuborish va natijani avtomatik hisoblash
+      summary: Test javoblarini yuborish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this O'quv materiali.
+        required: true
+      tags:
+      - O'quv materiallari
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestSubmissionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TestSubmissionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TestSubmissionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/results/:
+    get:
+      operationId: results_list
+      description: Foydalanuvchi natijalari ViewSet (faqat o'qish).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Natija ID
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserResultList'
+          description: ''
+  /api/results/{id}/:
+    get:
+      operationId: results_retrieve
+      description: Foydalanuvchi natijalari ViewSet (faqat o'qish).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Natija ID
+        required: true
+      tags:
+      - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResult'
+          description: ''
+  /api/results/my_results/:
+    get:
+      operationId: results_my_results_list
+      description: Foydalanuvchining barcha test natijalarini olish
+      summary: Barcha natijalarni olish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Natija ID
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserResultList'
+          description: ''
+  /api/results/statistics/:
+    get:
+      operationId: results_statistics_retrieve
+      description: Foydalanuvchi test statistikasini olish (o'rtacha foiz, eng yaxshi
+        natija, so'nggi natijalar)
+      summary: Foydalanuvchi statistikasi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Natija ID
+        required: true
+      tags:
+      - Natijalar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    AdminTokenObtainPairRequest:
+      type: object
+      description: Admin foydalanuvchilar uchun token serializer.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    BlankEnum:
+      enum:
+      - ''
+    Category:
+      type: object
+      description: Kategoriya serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Kategoriya nomi
+          description: Kategoriya nomi
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+          description: Kategoriya yaratilgan sana va vaqt
+      required:
+      - created_at
+      - id
+      - name
+    CategoryRequest:
+      type: object
+      description: Kategoriya serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Kategoriya nomi
+          description: Kategoriya nomi
+          maxLength: 255
+      required:
+      - name
+    CorrectOptionEnum:
+      enum:
+      - A
+      - B
+      - C
+      - D
+      type: string
+      description: |-
+        * `A` - A
+        * `B` - B
+        * `C` - C
+        * `D` - D
+    NullEnum:
+      enum:
+      - null
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedQuestionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+    PaginatedQuestionListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionList'
+    PaginatedReadingMaterialList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReadingMaterial'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PaginatedUserResultList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResult'
+    PatchedCategoryRequest:
+      type: object
+      description: Kategoriya serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Kategoriya nomi
+          description: Kategoriya nomi
+          maxLength: 255
+    PatchedQuestionRequest:
+      type: object
+      description: Savol serializer.
+      properties:
+        reading_material:
+          type: integer
+          title: O'quv materiali
+          description: Savol bog'langan o'quv materiali
+        question_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestionTypeEnum'
+          title: Savol turi
+          description: |-
+            Savolning turi: ko'p tanlovli yoki yozma
+
+            * `multiple_choice` - Ko'p tanlovli (ABCD)
+            * `written` - Yozma javob
+        question_text:
+          type: string
+          minLength: 1
+          title: Savol matni
+          description: Savolning to'liq matni
+        option_a:
+          type: string
+          nullable: true
+          title: A variant
+          description: Ko'p tanlovli savol uchun A variant
+          maxLength: 500
+        option_b:
+          type: string
+          nullable: true
+          title: B variant
+          description: Ko'p tanlovli savol uchun B variant
+          maxLength: 500
+        option_c:
+          type: string
+          nullable: true
+          title: C variant
+          description: Ko'p tanlovli savol uchun C variant
+          maxLength: 500
+        option_d:
+          type: string
+          nullable: true
+          title: D variant
+          description: Ko'p tanlovli savol uchun D variant
+          maxLength: 500
+        correct_option:
+          nullable: true
+          title: To'g'ri javob
+          description: |-
+            Ko'p tanlovli savol uchun to'g'ri javob (A, B, C yoki D)
+
+            * `A` - A
+            * `B` - B
+            * `C` - C
+            * `D` - D
+          oneOf:
+          - $ref: '#/components/schemas/CorrectOptionEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        correct_answer:
+          type: string
+          nullable: true
+          title: To'g'ri javob matni
+          description: Yozma savol uchun to'g'ri javob matni
+    PatchedReadingMaterialRequest:
+      type: object
+      description: O'quv materiali serializer.
+      properties:
+        category_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          title: Sarlavha
+          description: O'quv materialining sarlavhasi
+          maxLength: 255
+        short_description:
+          type: string
+          nullable: true
+          title: Qisqacha ma'lumot
+          description: 'Masalan: ''Matnni o''qing va savollarni javoblab chiqing'''
+          maxLength: 500
+        content:
+          type: string
+          minLength: 1
+          title: Mazmun
+          description: O'quv materialining to'liq matni
+        audio:
+          type: string
+          format: binary
+          nullable: true
+          title: Audio fayl
+          description: Matnning audio ko'rinishi (ixtiyoriy)
+    Question:
+      type: object
+      description: Savol serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        reading_material:
+          type: integer
+          title: O'quv materiali
+          description: Savol bog'langan o'quv materiali
+        question_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestionTypeEnum'
+          title: Savol turi
+          description: |-
+            Savolning turi: ko'p tanlovli yoki yozma
+
+            * `multiple_choice` - Ko'p tanlovli (ABCD)
+            * `written` - Yozma javob
+        question_text:
+          type: string
+          title: Savol matni
+          description: Savolning to'liq matni
+        option_a:
+          type: string
+          nullable: true
+          title: A variant
+          description: Ko'p tanlovli savol uchun A variant
+          maxLength: 500
+        option_b:
+          type: string
+          nullable: true
+          title: B variant
+          description: Ko'p tanlovli savol uchun B variant
+          maxLength: 500
+        option_c:
+          type: string
+          nullable: true
+          title: C variant
+          description: Ko'p tanlovli savol uchun C variant
+          maxLength: 500
+        option_d:
+          type: string
+          nullable: true
+          title: D variant
+          description: Ko'p tanlovli savol uchun D variant
+          maxLength: 500
+        correct_option:
+          nullable: true
+          title: To'g'ri javob
+          description: |-
+            Ko'p tanlovli savol uchun to'g'ri javob (A, B, C yoki D)
+
+            * `A` - A
+            * `B` - B
+            * `C` - C
+            * `D` - D
+          oneOf:
+          - $ref: '#/components/schemas/CorrectOptionEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        correct_answer:
+          type: string
+          nullable: true
+          title: To'g'ri javob matni
+          description: Yozma savol uchun to'g'ri javob matni
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+          description: Savol yaratilgan sana va vaqt
+      required:
+      - created_at
+      - id
+      - question_text
+      - question_type
+      - reading_material
+    QuestionList:
+      type: object
+      description: Savollar ro'yxati uchun serializer (to'g'ri javobsiz).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        question_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestionTypeEnum'
+          title: Savol turi
+          description: |-
+            Savolning turi: ko'p tanlovli yoki yozma
+
+            * `multiple_choice` - Ko'p tanlovli (ABCD)
+            * `written` - Yozma javob
+        question_text:
+          type: string
+          title: Savol matni
+          description: Savolning to'liq matni
+        option_a:
+          type: string
+          nullable: true
+          title: A variant
+          description: Ko'p tanlovli savol uchun A variant
+          maxLength: 500
+        option_b:
+          type: string
+          nullable: true
+          title: B variant
+          description: Ko'p tanlovli savol uchun B variant
+          maxLength: 500
+        option_c:
+          type: string
+          nullable: true
+          title: C variant
+          description: Ko'p tanlovli savol uchun C variant
+          maxLength: 500
+        option_d:
+          type: string
+          nullable: true
+          title: D variant
+          description: Ko'p tanlovli savol uchun D variant
+          maxLength: 500
+      required:
+      - id
+      - question_text
+      - question_type
+    QuestionRequest:
+      type: object
+      description: Savol serializer.
+      properties:
+        reading_material:
+          type: integer
+          title: O'quv materiali
+          description: Savol bog'langan o'quv materiali
+        question_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestionTypeEnum'
+          title: Savol turi
+          description: |-
+            Savolning turi: ko'p tanlovli yoki yozma
+
+            * `multiple_choice` - Ko'p tanlovli (ABCD)
+            * `written` - Yozma javob
+        question_text:
+          type: string
+          minLength: 1
+          title: Savol matni
+          description: Savolning to'liq matni
+        option_a:
+          type: string
+          nullable: true
+          title: A variant
+          description: Ko'p tanlovli savol uchun A variant
+          maxLength: 500
+        option_b:
+          type: string
+          nullable: true
+          title: B variant
+          description: Ko'p tanlovli savol uchun B variant
+          maxLength: 500
+        option_c:
+          type: string
+          nullable: true
+          title: C variant
+          description: Ko'p tanlovli savol uchun C variant
+          maxLength: 500
+        option_d:
+          type: string
+          nullable: true
+          title: D variant
+          description: Ko'p tanlovli savol uchun D variant
+          maxLength: 500
+        correct_option:
+          nullable: true
+          title: To'g'ri javob
+          description: |-
+            Ko'p tanlovli savol uchun to'g'ri javob (A, B, C yoki D)
+
+            * `A` - A
+            * `B` - B
+            * `C` - C
+            * `D` - D
+          oneOf:
+          - $ref: '#/components/schemas/CorrectOptionEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        correct_answer:
+          type: string
+          nullable: true
+          title: To'g'ri javob matni
+          description: Yozma savol uchun to'g'ri javob matni
+      required:
+      - question_text
+      - question_type
+      - reading_material
+    QuestionTypeEnum:
+      enum:
+      - multiple_choice
+      - written
+      type: string
+      description: |-
+        * `multiple_choice` - Ko'p tanlovli (ABCD)
+        * `written` - Yozma javob
+    ReadingMaterial:
+      type: object
+      description: O'quv materiali serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        title:
+          type: string
+          title: Sarlavha
+          description: O'quv materialining sarlavhasi
+          maxLength: 255
+        short_description:
+          type: string
+          nullable: true
+          title: Qisqacha ma'lumot
+          description: 'Masalan: ''Matnni o''qing va savollarni javoblab chiqing'''
+          maxLength: 500
+        content:
+          type: string
+          title: Mazmun
+          description: O'quv materialining to'liq matni
+        audio:
+          type: string
+          format: uri
+          nullable: true
+          title: Audio fayl
+          description: Matnning audio ko'rinishi (ixtiyoriy)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+          description: Material yaratilgan sana va vaqt
+        questions_count:
+          type: integer
+          readOnly: true
+      required:
+      - category
+      - content
+      - created_at
+      - id
+      - questions_count
+      - title
+    ReadingMaterialDetail:
+      type: object
+      description: O'quv materiali batafsil serializer (savollar bilan).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        title:
+          type: string
+          title: Sarlavha
+          description: O'quv materialining sarlavhasi
+          maxLength: 255
+        short_description:
+          type: string
+          nullable: true
+          title: Qisqacha ma'lumot
+          description: 'Masalan: ''Matnni o''qing va savollarni javoblab chiqing'''
+          maxLength: 500
+        content:
+          type: string
+          title: Mazmun
+          description: O'quv materialining to'liq matni
+        audio:
+          type: string
+          format: uri
+          nullable: true
+          title: Audio fayl
+          description: Matnning audio ko'rinishi (ixtiyoriy)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+          description: Material yaratilgan sana va vaqt
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionList'
+          readOnly: true
+        questions_count:
+          type: integer
+          readOnly: true
+      required:
+      - category
+      - content
+      - created_at
+      - id
+      - questions
+      - questions_count
+      - title
+    ReadingMaterialRequest:
+      type: object
+      description: O'quv materiali serializer.
+      properties:
+        category_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          title: Sarlavha
+          description: O'quv materialining sarlavhasi
+          maxLength: 255
+        short_description:
+          type: string
+          nullable: true
+          title: Qisqacha ma'lumot
+          description: 'Masalan: ''Matnni o''qing va savollarni javoblab chiqing'''
+          maxLength: 500
+        content:
+          type: string
+          minLength: 1
+          title: Mazmun
+          description: O'quv materialining to'liq matni
+        audio:
+          type: string
+          format: binary
+          nullable: true
+          title: Audio fayl
+          description: Matnning audio ko'rinishi (ixtiyoriy)
+      required:
+      - content
+      - title
+    TestSubmissionRequest:
+      type: object
+      description: Test javoblarini yuborish uchun serializer.
+      properties:
+        reading_material_id:
+          type: integer
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Savol ID va javob mapping''i. Format: {''question_id'': ''answer''}'
+      required:
+      - answers
+      - reading_material_id
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    User:
+      type: object
+      description: Foydalanuvchi serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - id
+      - username
+    UserRegistrationRequest:
+      type: object
+      description: Foydalanuvchi ro'yxatdan o'tish serializer.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          description: Parol kamida 8 belgidan iborat bo'lishi kerak
+        password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Parolni tasdiqlash
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - password
+      - password_confirm
+      - username
+    UserRequest:
+      type: object
+      description: Foydalanuvchi serializer.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - username
+    UserResult:
+      type: object
+      description: Foydalanuvchi natijasi serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        reading_material:
+          allOf:
+          - $ref: '#/components/schemas/ReadingMaterial'
+          readOnly: true
+        total_questions:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: Jami savollar
+          description: Testdagi jami savollar soni
+        correct_answers:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: To'g'ri javoblar
+          description: To'g'ri berilgan javoblar soni
+        percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Foiz
+          description: Test natijasi foizda
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yakunlangan vaqti
+          description: Test yakunlangan sana va vaqt
+      required:
+      - correct_answers
+      - finished_at
+      - id
+      - percentage
+      - reading_material
+      - total_questions
+      - user
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

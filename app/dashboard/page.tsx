@@ -4,16 +4,18 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { storageService, type User } from "@/lib/storage-service"
-import { apiService, type ReadingMaterial } from "@/lib/api-service"
+import { apiService, type ReadingMaterial, type Category } from "@/lib/api-service"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import DashboardHeader from "@/components/dashboard-header"
-import { BookOpen, Clock, FileText } from "lucide-react"
+import { BookOpen, Clock, FileText, Folder } from "lucide-react"
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [materials, setMaterials] = useState<ReadingMaterial[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -47,6 +49,10 @@ export default function DashboardPage() {
           last_name: userProfile.last_name,
         }
         setUser(userData)
+
+        // Kategoriyalarni yuklash
+        const categoriesData = await apiService.getCategories()
+        setCategories(categoriesData)
 
         // O'quv materiallarini API'dan olish
         const readingMaterials = await apiService.getReadingMaterials()
@@ -114,19 +120,130 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Bugungi testni tanlang va darhol boshlang.</p>
         </div>
 
-        {/* Tests Grid */}
-        {materials.length === 0 ? (
-          <Card className="border border-border">
-            <CardContent className="p-12 text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <BookOpen className="w-8 h-8" />
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <Button
+              variant={selectedCategory === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+            >
+              Barchasi
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                <Folder className="w-4 h-4 mr-2" />
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Grouped by Categories */}
+        {categories.length > 0 && selectedCategory === null ? (
+          categories.map((category) => {
+            const categoryMaterials = materials.filter(
+              (m) => m.category?.id === category.id
+            )
+            if (categoryMaterials.length === 0) return null
+
+            return (
+              <div key={category.id} className="mb-12">
+                <div className="flex items-center gap-2 mb-6">
+                  <Folder className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">{category.name}</h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({categoryMaterials.length} ta)
+                  </span>
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categoryMaterials.map((material, idx) => (
+                    <Link key={material.id} href={`/test/${material.id}`}>
+                      <Card
+                        className="border border-border hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:shadow-md transition-all duration-300 h-full cursor-pointer group animate-scale-in"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <CardContent className="p-6 space-y-4 h-full flex flex-col">
+                          {/* Header */}
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                <FileText className="w-5 h-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors line-clamp-2">
+                                  {material.title}
+                                </h3>
+                                {material.short_description && (
+                                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                                    {material.short_description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 pt-3 border-t border-border">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>{material.questions_count} savol</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>~{Math.ceil(material.questions_count * 1.5)} min</span>
+                            </div>
+                          </div>
+
+                          {/* Button */}
+                          <Button
+                            size="sm"
+                            className="w-full h-9 text-sm mt-auto group-hover:shadow-md active:scale-[0.98] transition-all duration-200"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              router.push(`/test/${material.id}`)
+                            }}
+                          >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Testni boshlash
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <p className="text-lg text-muted-foreground">Hali hech qanday test mavjud emas</p>
-            </CardContent>
-          </Card>
+            )
+          })
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {materials.map((material, idx) => (
+          <>
+            {/* Filtered Materials or All Materials */}
+            {(() => {
+              const filteredMaterials = selectedCategory
+                ? materials.filter((m) => m.category?.id === selectedCategory)
+                : materials
+
+              return filteredMaterials.length === 0 ? (
+                <Card className="border border-border">
+                  <CardContent className="p-12 text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                      <BookOpen className="w-8 h-8" />
+                    </div>
+                    <p className="text-lg text-muted-foreground">
+                      {selectedCategory
+                        ? "Bu kategoriyada hali hech qanday test mavjud emas"
+                        : "Hali hech qanday test mavjud emas"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredMaterials.map((material, idx) => (
               <Link key={material.id} href={`/test/${material.id}`}>
                 <Card
                   className="border border-border hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] active:shadow-md transition-all duration-300 h-full cursor-pointer group animate-scale-in"
@@ -178,9 +295,12 @@ export default function DashboardPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
-          </div>
+                    </Link>
+                  ))}
+                </div>
+              )
+            })()}
+          </>
         )}
       </div>
     </main>
