@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { BookOpen, ArrowRight, Sparkles, Zap, Target } from 'lucide-react'
 
@@ -148,6 +149,56 @@ export default function LandingPage() {
               </div>
             )
           })}
+        </div>
+      </section>
+
+      {/* Inspiring Educators */}
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-20 border-t border-border/50">
+        <div className="text-center space-y-4 mb-12">
+          <p className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 text-sm font-semibold text-primary">
+            Ilhomlantiruvchi ustozlar
+          </p>
+          <h2 className="text-3xl md:text-4xl font-black text-foreground">Ustozlarimiz tajribasi</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Hududiy metodist va maktab o‘qituvchilarining tajribasi bilan tanishing.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {[
+            {
+              name: "Rohila Jumaniyozova",
+              title: "Xorazm viloyati Pedagogik mahorat markazi metodik xizmat ko’rsatish bo’limi boshlang’ich ta’lim metodisti",
+              img: "/sdfkjhkgjfgs-1.jpg",
+            },
+            {
+              name: "Raximova Zulayho Baxodirovna",
+              title: "Xorazm viloyati Qo‘shko‘pir tumani 19-sonli maktabning Boshlang‘ich ta’lim fani o‘qituvchisi",
+              img: "/sdfkjhkgjfgs-2.jpg",
+            },
+          ].map((person, idx) => (
+            <div
+              key={idx}
+              className="group rounded-3xl border border-border/70 bg-card/60 backdrop-blur-sm overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+            >
+              <div className="relative w-full h-80 bg-muted flex items-center justify-center">
+                <Image
+                  src={person.img}
+                  alt={person.name}
+                  fill
+                  className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/10 pointer-events-none" />
+              </div>
+              <div className="p-6 space-y-3">
+                <h3 className="text-xl font-bold">{person.name}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {person.title}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

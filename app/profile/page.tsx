@@ -35,7 +35,6 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
-    email: "",
   })
   const [isSaving, setIsSaving] = useState(false)
 
@@ -75,7 +74,6 @@ export default function ProfilePage() {
         setEditForm({
           first_name: userData.first_name || "",
           last_name: userData.last_name || "",
-          email: userData.email || "",
         })
       } catch (err: any) {
         console.error("Profile load error:", err)
@@ -147,14 +145,16 @@ export default function ProfilePage() {
     setEditForm({
       first_name: user?.first_name || "",
       last_name: user?.last_name || "",
-      email: user?.email || "",
     })
   }
 
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const updatedUser = await apiService.updateProfile(editForm)
+      const updatedUser = await apiService.updateProfile({
+        first_name: editForm.first_name,
+        last_name: editForm.last_name,
+      })
       const userData = {
         id: updatedUser.id,
         username: updatedUser.username,
@@ -171,7 +171,6 @@ export default function ProfilePage() {
       setEditForm({
         first_name: updatedUser.first_name || "",
         last_name: updatedUser.last_name || "",
-        email: updatedUser.email || "",
       })
       setIsEditing(false)
     } catch (err: any) {
@@ -260,16 +259,7 @@ export default function ProfilePage() {
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium mb-2 block">Email</label>
-                {isEditing ? (
-                  <Input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    placeholder="Email manzilingiz"
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground py-2">{user.email}</p>
-                )}
+                <p className="text-sm text-muted-foreground py-2">{user.email}</p>
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium mb-2 block">Username</label>

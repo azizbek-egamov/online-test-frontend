@@ -56,9 +56,15 @@ export default function DashboardPage() {
 
         // O'quv materiallarini API'dan olish
         const readingMaterials = await apiService.getReadingMaterials()
-        // Array ekanligini tekshirish
+        // Array ekanligini tekshirish va eski -> yangi tartibida sort qilish
         if (Array.isArray(readingMaterials)) {
-          setMaterials(readingMaterials)
+          // created_at bo'yicha ascending (eski -> yangi) tartibda sort qilish
+          const sortedMaterials = readingMaterials.sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime()
+            const dateB = new Date(b.created_at).getTime()
+            return dateA - dateB // Ascending: eski birinchi
+          })
+          setMaterials(sortedMaterials)
         } else {
           setMaterials([])
         }
